@@ -21,10 +21,12 @@ class Player {
   private readonly point: glMatrix.vec2;
   constructor(
     private readonly context: CanvasRenderingContext2D,
-    private readonly color: string) {
-    this.point = glMatrix.vec2.create();
-    this.point[0] = 120;
-    this.point[1] = 120;
+    private readonly color: string,
+    x: number = 0,
+    y: number = 0,
+    radius: number = 10,
+  ) {
+    this.point = glMatrix.vec2.fromValues(x, y);
     this.radius = 10;
   }
 
@@ -100,7 +102,7 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
   const bgContext = bgCanvas.getContext('2d');
 
   const background = new Background(bgContext, STAGE_WIDTH, STAGE_HEIGHT, '#000000');
-  const player = new Player(bgContext, '#FFFFFF');
+  const player = new Player(bgContext, '#FFFFFF', STAGE_WIDTH / 2, STAGE_HEIGHT - 40);
 
   function tick() {
     player.move(key.toMat2d());
