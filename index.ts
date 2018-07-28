@@ -36,6 +36,7 @@ class Player {
 
   draw() {
     this.context.fillStyle = this.color;
+    this.context.beginPath();
     this.context.arc(this.point[0], this.point[1], this.radius, 0, Math.PI * 2, false);
     this.context.fill();
   }
