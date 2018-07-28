@@ -37,6 +37,10 @@ class Player {
     this.radius = 10;
   }
 
+  move(trans: glMatrix.mat2d) {
+    glMatrix.vec2.transformMat2d(this.point, this.point, trans);
+  }
+
   draw() {
     this.context.fillStyle = this.color;
     this.context.arc(this.point[0], this.point[1], this.radius, 0, Math.PI * 2, false);
@@ -49,6 +53,12 @@ class KeyInput {
   public up: boolean;
   public right: boolean;
   public down: boolean;
+
+  toMat2d(scalar: number = 1) {
+    const x = this.left ? -1 : this.right ? 1 : 0;
+    const y = this.up   ? -1 : this.down  ? 1 : 0;
+    return glMatrix.mat2d.fromValues(1, 0, 0, 1, x * scalar, y * scalar);
+  }
 }
 
 
@@ -91,6 +101,8 @@ window.onkeyup = (e) => {
 };
 
 function tick() {
+  player.move(key.toMat2d());
+
   background.draw();
   player.draw();
 
