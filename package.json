@@ -1,0 +1,22 @@
+{
+  "name": "irairabar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/gl-matrix": "^2.4.0",
+    "browserify": "^16.2.2",
+    "gl-matrix": "^2.7.1",
+    "tsify": "^4.0.0",
+    "typescript": "^2.9.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js >index.js"
+  },
+  "author": "tyru <tyru.exe@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "requirejs": "^2.3.5"
+  }
+}
