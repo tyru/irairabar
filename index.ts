@@ -1,7 +1,9 @@
 import * as glMatrix from 'gl-matrix';
 
-const STAGE_WIDTH = 320;
-const STAGE_HEIGHT = 240;
+import * as DSL from './dsl';
+
+const MAP_WIDTH = 320;
+const MAP_HEIGHT = 240;
 
 class Color {
   private constructor(
@@ -30,19 +32,6 @@ class Color {
 
   toRGBAString() {
     return `rgba(${this.r},${this.g},${this.b},${this.a})`;
-  }
-}
-
-class Background {
-  constructor(
-    private readonly context: CanvasRenderingContext2D,
-    private readonly width: number,
-    private readonly height: number,
-    private readonly color: Color) { }
-
-  draw() {
-    this.context.fillStyle = this.color.toRGBAString();
-    this.context.fillRect(0, 0, this.width, this.height);
   }
 }
 
@@ -140,17 +129,29 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
   };
 
   const bgCanvas = <HTMLCanvasElement> document.getElementById('bg');
-  bgCanvas.width = STAGE_WIDTH;
-  bgCanvas.height = STAGE_HEIGHT;
+  bgCanvas.width = MAP_WIDTH;
+  bgCanvas.height = MAP_HEIGHT;
   const bgContext = bgCanvas.getContext('2d');
 
-  const background = new Background(bgContext, STAGE_WIDTH, STAGE_HEIGHT, Color.fromRGB(0, 0, 0));
-  const player = new Player(bgContext, Color.fromRGB(255, 255, 255), STAGE_WIDTH / 2, STAGE_HEIGHT - 40);
+  function loadStage() {
+    return new DSL.Stage(MAP_WIDTH, MAP_HEIGHT, [
+      new DSL.StartFrom(0, 2),
+      new DSL.Block(bgContext, 0, 0, true, [new DSL.BlockLayer()]),
+      new DSL.Block(bgContext, 0, 1, false, [new DSL.BlockLayer()]),
+      new DSL.Block(bgContext, 0, 2, true, [new DSL.BlockLayer()]),
+    ]);
+  }
+
+  const stage = loadStage();
+  const player = new Player(
+    bgContext, Color.fromRGB(255, 255, 255), stage.width / 2, stage.height - 40
+  );
 
   function tick() {
+    stage.move();
     player.move(key.toMat2d());
 
-    background.draw();
+    stage.draw();
     player.draw();
 
     requestAnimationFrame(tick);
