@@ -3,8 +3,6 @@ var tsify = require('tsify');
 
 browserify()
     .add('index.ts')
-    .plugin('tsify', {
-      noImplicitAny: true,
-    })
+    .plugin('tsify')
     .bundle()
     .pipe(process.stdout);
