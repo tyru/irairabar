@@ -134,8 +134,12 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
   const bgContext = bgCanvas.getContext('2d');
 
   function loadStage() {
-    return new DSL.Stage(MAP_WIDTH, MAP_HEIGHT, [
-      new DSL.StartFrom(0, 2),
+    return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
+      new DSL.MoveLine(`
+      M 0 480
+      L 0 240
+      Z
+      `),
       new DSL.Block(bgContext, 0, 0, true, [new DSL.BlockLayer()]),
       new DSL.Block(bgContext, 0, 1, false, [new DSL.BlockLayer()]),
       new DSL.Block(bgContext, 0, 2, true, [new DSL.BlockLayer()]),
