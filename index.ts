@@ -69,9 +69,21 @@ import KeyInput from './key-input';
         L 0 320
         C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}
       `),
-      new DSL.Block(bgContext, 0, 0, true, [new DSL.BlockLayer()]),
-      new DSL.Block(bgContext, 0, 1, false, [new DSL.BlockLayer()]),
-      new DSL.Block(bgContext, 0, 2, true, [new DSL.BlockLayer()]),
+      new DSL.Block(bgContext, 0, 0, true, [
+        new DSL.BlockLayer([
+          new DSL.BlockObjectText(bgContext, '(0,0)', 20, 20),
+        ]),
+      ]),
+      new DSL.Block(bgContext, 0, 1, false, [
+        new DSL.BlockLayer([
+          new DSL.BlockObjectText(bgContext, '(0,1)', 20, 20),
+        ]),
+      ]),
+      new DSL.Block(bgContext, 0, 2, true, [
+        new DSL.BlockLayer([
+          new DSL.BlockObjectText(bgContext, '(0,2)', 20, 20),
+        ]),
+      ]),
     ]);
   }
 

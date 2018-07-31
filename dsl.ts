@@ -167,18 +167,19 @@ export class Block implements Callable {
     private readonly context: CanvasRenderingContext2D,
     private readonly col: number,
     private readonly row: number,
-    private readonly bottomWall: boolean,
+    public readonly bottomWall: boolean,
     private readonly blockLayers: BlockLayer[]) { }
 
+  get x() { return this.width * this.col }
+  get y() { return this.height * this.row }
+
   draw() {
-    const x = this.width * this.col;
-    const y = this.height * this.row;
+    const { x, y } = this;
 
     this.context.fillStyle = this.bottomWall ? 'black' : 'white';
     this.context.fillRect(x, y, this.width, this.height);
 
-    this.context.fillStyle = this.bottomWall ? 'white' : 'black';
-    this.context.fillText(`(${this.col},${this.row})`, x + 20, y + 20);
+    this.blockLayers.forEach(layer => layer.draw(this));
   }
 
   call(stage: Stage) {
@@ -189,6 +190,30 @@ export class Block implements Callable {
 }
 
 export class BlockLayer {
+  constructor(private readonly objects: BlockObject[]) { }
+
+  draw(block: Block) {
+    this.objects.forEach(obj => obj.draw(this, block));
+  }
+}
+
+interface BlockObject {
+  draw(layer: BlockLayer, block: Block): void
+}
+
+export class BlockObjectText implements BlockObject {
+  constructor(
+    private readonly context: CanvasRenderingContext2D,
+    private readonly text: string,
+    private readonly x: number,
+    private readonly y: number,
+  ) {}
+
+  draw(_: BlockLayer, block: Block) {
+    const { x, y, bottomWall } = block;
+    this.context.fillStyle = bottomWall ? 'white' : 'black';
+    this.context.fillText(this.text, x + 20, y + 20);
+  }
 }
 
 export class Stage {
