@@ -167,6 +167,18 @@ export class MoveLine implements Callable {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
 
+    // Calculate rotation angle
+    // NOTE: y axis is inverse
+    const dx = -3 * Math.pow(t, 2) * (p0[0] - 3 * p1[0] + 3 * p2[0] - p3[0]) +
+               6 * t * (p0[0] - 2 * p1[0] + p2[0]) +
+               -3 * (p0[0] - p1[0]);
+    const dy = -3 * Math.pow(t, 2) * (p0[1] - 3 * p1[1] + 3 * p2[1] - p3[1]) +
+               6 * t * (p0[1] - 2 * p1[1] + p2[1]) +
+               -3 * (p0[1] - p1[1]);
+    const angleYaxis = Math.atan(-dy / dx);
+    const angle = angleYaxis >= Math.PI * 0.5 ? angleYaxis - Math.PI * 0.5 : angleYaxis + Math.PI * 1.5;
+
+    // Calculate current point on the curve
     const a = Math.pow(1 - t, 3);
     glMatrix.vec2.multiply(p0, glMatrix.vec2.fromValues(a, a), p0);
 
@@ -184,10 +196,8 @@ export class MoveLine implements Callable {
     glMatrix.vec2.add(p, p, p2);
     glMatrix.vec2.add(p, p, p3);
 
-    // FIXME
-    const angle = Math.PI / 2 * t;
+    // Apply above results
     glMatrix.mat2d.fromRotation(this._point, angle);
-
     this._point[4] = p[0];
     this._point[5] = p[1];
 
@@ -213,6 +223,14 @@ export class MoveLine implements Callable {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
 
+    // Calculate rotation angle
+    // NOTE: y axis is inverse
+    const dx = 2 * ((t - 1) * p0[0] - (2 * t - 1) * p1[0] + t * p2[0]);
+    const dy = 2 * ((t - 1) * p0[1] - (2 * t - 1) * p1[1] + t * p2[1]);
+    const angleYaxis = Math.atan(-dy / dx);
+    const angle = angleYaxis >= Math.PI * 0.5 ? angleYaxis - Math.PI * 0.5 : angleYaxis + Math.PI * 1.5;
+
+    // Calculate current point on the curve
     const a = Math.pow(1 - t, 2);
     glMatrix.vec2.multiply(p0, glMatrix.vec2.fromValues(a, a), p0);
 
@@ -226,10 +244,8 @@ export class MoveLine implements Callable {
     glMatrix.vec2.add(p, p0, p1);
     glMatrix.vec2.add(p, p, p2);
 
-    // FIXME
-    const angle = Math.PI / 2 * t;
+    // Apply above results
     glMatrix.mat2d.fromRotation(this._point, angle);
-
     this._point[4] = p[0];
     this._point[5] = p[1];
 
@@ -326,6 +342,13 @@ export class Stage {
   move() {
     this.moveLine = this.moveLine.next();
     const p = this.moveLine.point;
+
+    // Convert the coordinate system
+    // * Original rotation is the same as css's matrix() function
+    // * Translation is as-is
+    p[1] = -p[1];
+    p[2] = -p[2];
+
     if (!glMatrix.mat2d.invert(p, p)) {
       throw new Error('could not invert p = ' + Array.from(p).toString());
     }

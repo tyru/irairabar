@@ -59,18 +59,12 @@ import KeyInput from './key-input';
 
   function loadStage() {
     const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
-    const cx = MAP_WIDTH;
-    const cy = MAP_HEIGHT;
-    const rx = MAP_WIDTH;
-    const ry = MAP_HEIGHT;
     return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
       new DSL.MoveLine([
         'M 0 640',
-        'V 320',
-        'h 50',
-        'h -50',
-        // `C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}`,
-        `Q ${cx - rx} ${cy - ry} ${cx} ${cy - ry}`,
+        'v -320',
+        // `C 0 ${320 - kappa * 320} ${320 - kappa * 320} 0 320 0`,
+        `Q 0 0 320 0`,
       ].join(' ')),
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([
