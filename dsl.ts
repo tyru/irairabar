@@ -124,7 +124,6 @@ export class MoveLine implements Callable {
     const p2 = glMatrix.vec2.fromValues(cmd.x2, cmd.y2);
     const p3 = glMatrix.vec2.fromValues(cmd.x, cmd.y);
     const t = this.tick / glMatrix.vec2.distance(p0, p3);
-    console.log('t =', t);
 
     if (1 - t < 0.001) {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
@@ -147,28 +146,10 @@ export class MoveLine implements Callable {
     glMatrix.vec2.add(p, p, p2);
     glMatrix.vec2.add(p, p, p3);
 
-    // const dx = (3 * Math.pow(t, 2) * (3 * p1[0] + p3[0] - 3 * p2[0] - p0[0])) +
-    //            (2 * t * (3 * (p0[0] - 2 * p1[0] + p2[0]))) +
-    //            (3 * (p1[0] - p0[0]));
-    // const dy = (3 * Math.pow(t, 2) * (3 * p1[1] + p3[1] - 3 * p2[1] - p0[1])) +
-    //            (2 * t * (3 * (p0[1] - 2 * p1[1] + p2[1]))) +
-    //            (3 * (p1[1] - p0[1]));
-    // console.log('a =', (dy / dx), dx, dy);
-    //
-    // const acosArg = Math.min(Math.max(1 / (dy / dx), -1), 1);
-    // const angle = Math.acos(acosArg);
-    // const angleForYaxis = angle - Math.PI / 2;
-    // console.log('angle', angle, angle * 180 / Math.PI);
-    // console.log('angleForYaxis', angleForYaxis, angleForYaxis * 180 / Math.PI);
-
-    // glMatrix.mat2d.fromRotation(this._point, angleForYaxis);
-
     const angle = Math.PI / 2 * t;
     glMatrix.mat2d.fromRotation(this._point, angle);
     this._point[4] = p[0];
     this._point[5] = p[1];
-
-    console.log('point', this._point);
 
     return this;
   }
