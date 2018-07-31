@@ -24,6 +24,7 @@ export class MoveLine implements Callable {
     point = glMatrix.mat2d.create(),
   ) {
     if (typeof cmds === 'string') {
+      // TODO: make some alias commands into the generic commands as possible
       cmds = svgParser.makeAbsolute(svgParser.parseSVG(cmds));
     }
     this.cmds = cmds;
