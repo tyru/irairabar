@@ -147,6 +147,11 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
   bgCanvas.height = MAP_HEIGHT;
   const bgContext = bgCanvas.getContext('2d');
 
+  const fgCanvas = <HTMLCanvasElement> document.getElementById('fg');
+  fgCanvas.width = MAP_WIDTH;
+  fgCanvas.height = MAP_HEIGHT;
+  const fgContext = fgCanvas.getContext('2d');
+
   function loadStage() {
     return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
       new DSL.MoveLine(`
@@ -162,7 +167,7 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
 
   const stage = loadStage();
   const player = new Player(
-    bgContext, Color.fromRGB(255, 255, 255), stage.width / 2, stage.height - 40
+    fgContext, Color.fromRGB(255, 255, 255), stage.width / 2, stage.height - 40
   );
 
   function tick() {

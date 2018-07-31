@@ -4,8 +4,22 @@
     <meta charset="utf-8">
     <title>Iraira Bar</title>
   </head>
+<style>
+#bg, #fg {
+  position: absolute;
+  left: 10;
+  top: 10;
+}
+#bg {
+  z-index: 1;
+}
+#fg {
+  z-index: 2;
+}
+</style>
   <body>
     <canvas id='bg'></canvas>
+    <canvas id='fg'></canvas>
   </body>
   <script type='text/javascript' src='./index.js'></script>
 </html>
