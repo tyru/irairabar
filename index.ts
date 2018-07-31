@@ -64,11 +64,11 @@ import KeyInput from './key-input';
     const rx = MAP_WIDTH;
     const ry = MAP_HEIGHT;
     return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
-      new DSL.MoveLine(`
-        M 0 640
-        L 0 320
-        C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}
-      `),
+      new DSL.MoveLine([
+        'M 0 640',
+        'L 0 320',
+        `C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}`,
+      ].join(' ')),
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([
           new DSL.BlockObjectText(bgContext, '(0,0)', 20, 20),
