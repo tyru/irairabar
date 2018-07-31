@@ -67,7 +67,8 @@ import KeyInput from './key-input';
       new DSL.MoveLine([
         'M 0 640',
         'L 0 320',
-        `C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}`,
+        // `C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}`,
+        `Q ${cx - rx} ${cy - ry} ${cx} ${cy - ry}`,
       ].join(' ')),
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([

@@ -58,6 +58,8 @@ export class MoveLine implements Callable {
       return this.nextClosePath(cmd);
     } else if (MoveLine.isCurveToCommand(cmd)) {
       return this.nextCurveTo(cmd);
+    } else if (MoveLine.isQuadraticCurveToCommand(cmd)) {
+      return this.nextQuadraticCurveTo(cmd);
     } else {
       throw new Error(`not implemented yet: cmd = ${JSON.stringify(cmd)}`);
     }
@@ -150,6 +152,48 @@ export class MoveLine implements Callable {
     glMatrix.vec2.add(p, p0, p1);
     glMatrix.vec2.add(p, p, p2);
     glMatrix.vec2.add(p, p, p3);
+
+    // FIXME
+    const angle = Math.PI / 2 * t;
+    glMatrix.mat2d.fromRotation(this._point, angle);
+
+    this._point[4] = p[0];
+    this._point[5] = p[1];
+
+    return this;
+  }
+
+  private static isQuadraticCurveToCommand(cmd: svgParser.Command): cmd is svgParser.QuadraticCurveToCommand {
+    return cmd.command === 'quadratic curveto';
+  }
+
+  /**
+   * cf.
+   * https://postd.cc/bezier-curves/
+   * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+   */
+  private nextQuadraticCurveTo(cmd: svgParser.QuadraticCurveToCommand) {
+    const p0 = glMatrix.vec2.fromValues(this.startCmdPoint[4], this.startCmdPoint[5]);
+    const p1 = glMatrix.vec2.fromValues(cmd.x1, cmd.y1);
+    const p2 = glMatrix.vec2.fromValues(cmd.x, cmd.y);
+    const t = this.tick / glMatrix.vec2.distance(p0, p2);
+
+    if (1 - t < 0.001) {
+      return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
+    }
+
+    const a = Math.pow(1 - t, 2);
+    glMatrix.vec2.multiply(p0, glMatrix.vec2.fromValues(a, a), p0);
+
+    const b = 2 * (1 - t) * t;
+    glMatrix.vec2.multiply(p1, glMatrix.vec2.fromValues(b, b), p1);
+
+    const c = Math.pow(t, 2);
+    glMatrix.vec2.multiply(p2, glMatrix.vec2.fromValues(c, c), p2);
+
+    const p = glMatrix.vec2.create();
+    glMatrix.vec2.add(p, p0, p1);
+    glMatrix.vec2.add(p, p, p2);
 
     // FIXME
     const angle = Math.PI / 2 * t;
