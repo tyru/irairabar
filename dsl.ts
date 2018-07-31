@@ -56,8 +56,10 @@ export class MoveLine implements Callable {
       return this.nextLineTo(cmd);
     } else if (MoveLine.isClosePathCommand(cmd)) {
       return this.nextClosePath(cmd);
+    } else if (MoveLine.isCurveToCommand(cmd)) {
+      return this.nextCurveTo(cmd);
     } else {
-      throw new Error(`not implemented yet: cmd = ${cmd.toString()}`);
+      throw new Error(`not implemented yet: cmd = ${JSON.stringify(cmd)}`);
     }
   }
 
@@ -80,14 +82,14 @@ export class MoveLine implements Callable {
     const { initX, initY } = this;
     const signX = cmd.x < initX ? -1 : 1;
     const signY = cmd.y < initY ? -1 : 1;
-    const dx = Math.abs(cmd.x - initX);
-    const dy = Math.abs(cmd.y - initY);
+    const tx = Math.abs(cmd.x - initX);
+    const ty = Math.abs(cmd.y - initY);
     let x, y;
-    if (dx > dy) {
+    if (tx > ty) {
       x = initX + signX * this.tick;
-      y = initY + signY * dy / dx * this.tick;
+      y = initY + signY * ty / tx * this.tick;
     } else {
-      x = initX + signX * dx / dy * this.tick;
+      x = initX + signX * tx / ty * this.tick;
       y = initY + signY * this.tick;
     }
     this.setX(x);
@@ -112,12 +114,74 @@ export class MoveLine implements Callable {
     });
   }
 
+  private static isCurveToCommand(cmd: svgParser.Command): cmd is svgParser.CurveToCommand {
+    return cmd.command === 'curveto';
+  }
+
+  private nextCurveTo(cmd: svgParser.CurveToCommand) {
+    const p0 = glMatrix.vec2.fromValues(this.startCmdPoint[4], this.startCmdPoint[5]);
+    const p1 = glMatrix.vec2.fromValues(cmd.x1, cmd.y1);
+    const p2 = glMatrix.vec2.fromValues(cmd.x2, cmd.y2);
+    const p3 = glMatrix.vec2.fromValues(cmd.x, cmd.y);
+    const t = this.tick / glMatrix.vec2.distance(p0, p3);
+    console.log('t =', t);
+
+    if (1 - t < 0.001) {
+      return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
+    }
+
+    const a = Math.pow(1 - t, 3);
+    glMatrix.vec2.multiply(p0, glMatrix.vec2.fromValues(a, a), p0);
+
+    const b = 3 * Math.pow(1 - t, 2) * t;
+    glMatrix.vec2.multiply(p1, glMatrix.vec2.fromValues(b, b), p1);
+
+    const c = 3 * (1 - t) * Math.pow(t, 2);
+    glMatrix.vec2.multiply(p2, glMatrix.vec2.fromValues(c, c), p2);
+
+    const d = Math.pow(t, 3);
+    glMatrix.vec2.multiply(p3, glMatrix.vec2.fromValues(d, d), p3);
+
+    const p = glMatrix.vec2.create();
+    glMatrix.vec2.add(p, p0, p1);
+    glMatrix.vec2.add(p, p, p2);
+    glMatrix.vec2.add(p, p, p3);
+
+    // const dx = (3 * Math.pow(t, 2) * (3 * p1[0] + p3[0] - 3 * p2[0] - p0[0])) +
+    //            (2 * t * (3 * (p0[0] - 2 * p1[0] + p2[0]))) +
+    //            (3 * (p1[0] - p0[0]));
+    // const dy = (3 * Math.pow(t, 2) * (3 * p1[1] + p3[1] - 3 * p2[1] - p0[1])) +
+    //            (2 * t * (3 * (p0[1] - 2 * p1[1] + p2[1]))) +
+    //            (3 * (p1[1] - p0[1]));
+    // console.log('a =', (dy / dx), dx, dy);
+    //
+    // const acosArg = Math.min(Math.max(1 / (dy / dx), -1), 1);
+    // const angle = Math.acos(acosArg);
+    // const angleForYaxis = angle - Math.PI / 2;
+    // console.log('angle', angle, angle * 180 / Math.PI);
+    // console.log('angleForYaxis', angleForYaxis, angleForYaxis * 180 / Math.PI);
+
+    // glMatrix.mat2d.fromRotation(this._point, angleForYaxis);
+
+    const angle = Math.PI / 2 * t;
+    glMatrix.mat2d.fromRotation(this._point, angle);
+    this._point[4] = p[0];
+    this._point[5] = p[1];
+
+    console.log('point', this._point);
+
+    return this;
+  }
+
   call(stage: Stage) {
     stage.moveLine = this;
   }
 }
 
 export class Block implements Callable {
+  private width: number;
+  private height: number;
+
   constructor(
     private readonly context: CanvasRenderingContext2D,
     private readonly col: number,
@@ -125,19 +189,20 @@ export class Block implements Callable {
     private readonly bottomWall: boolean,
     private readonly blockLayers: BlockLayer[]) { }
 
-  draw(stage: Stage, point: glMatrix.mat2d) {
-    const x = point[4];
-    const y = point[5];
+  draw() {
+    const x = this.width * this.col;
+    const y = this.height * this.row;
 
     this.context.fillStyle = this.bottomWall ? 'black' : 'white';
-    this.context.fillRect(x, y, stage.width, stage.height);
+    this.context.fillRect(x, y, this.width, this.height);
 
-    // TODO: debug
     this.context.fillStyle = this.bottomWall ? 'white' : 'black';
     this.context.fillText(`(${this.col},${this.row})`, x + 20, y + 20);
   }
 
   call(stage: Stage) {
+    this.width = stage.width;
+    this.height = stage.height;
     stage.setBlock(this.col, this.row, this);
   }
 }
@@ -148,6 +213,7 @@ export class BlockLayer {
 export class Stage {
   private _moveLine = new MoveLine('M 0 0');
   private readonly blocks = new Map<string, Block>();
+  private currentTransform = glMatrix.mat2d.create();
 
   get point() { return glMatrix.mat2d.clone(this._moveLine.point) }
 
@@ -168,34 +234,28 @@ export class Stage {
   public setBlock(col: number, row: number, block: Block) {
     this.blocks.set(`${col}-${row}`, block);
   }
-  public getBlockFromPoint(x: number, y: number) {
-    const col = Math.floor(x / this.width);
-    const row = Math.floor(y / this.height);
-    return this.blocks.get(`${col}-${row}`);
-  }
 
   move() {
     this.moveLine = this.moveLine.next();
     const p = this.moveLine.point;
-    this.context.setTransform(p[0], p[1], p[2], p[3], 0, 0);
+    if (!glMatrix.mat2d.invert(p, p)) {
+      throw new Error('could not invert p = ' + Array.from(p).toString());
+    }
+    this.currentTransform = p;
+    this.context.setTransform(p[0], p[1], p[2], p[3], p[4], p[5]);
   }
 
   draw() {
-    const topLeft = [this.x, this.y];
-    const topRight = [this.x + this.width, this.y];
-    const bottomLeft = [this.x, this.y + this.height];
-    const bottomRight = [this.x + this.width, this.y + this.height];
-    const point = this.point;
+    this.clearViewport();
+    // TODO: Draw visible blocks only
+    Array.from(this.blocks.values())
+         .forEach((block: Block) => block.draw());
+  }
 
-    [topLeft, topRight, bottomLeft, bottomRight].forEach(([x, y]) => {
-      const col = Math.floor(x / this.width);
-      const row = Math.floor(y / this.height);
-      const block = this.blocks.get(`${col}-${row}`);
-      if (block) {
-        point[4] = this.width * col - this.x;
-        point[5] = this.height * row - this.y;
-        block.draw(this, point);
-      }
-    });
+  private clearViewport() {
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+    this.context.clearRect(0, 0, this.width, this.height);
+    const t = this.currentTransform;
+    this.context.setTransform(t[0], t[1], t[2], t[3], t[4], t[5]);
   }
 }

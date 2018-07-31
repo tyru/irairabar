@@ -3,7 +3,7 @@ import * as glMatrix from 'gl-matrix';
 import * as DSL from './dsl';
 
 const MAP_WIDTH = 320;
-const MAP_HEIGHT = 240;
+const MAP_HEIGHT = 320;
 
 class Color {
   private constructor(
@@ -153,11 +153,16 @@ window.requestAnimationFrame = window.requestAnimationFrame ||
   const fgContext = fgCanvas.getContext('2d');
 
   function loadStage() {
+    const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
+    const cx = MAP_WIDTH;
+    const cy = MAP_HEIGHT;
+    const rx = MAP_WIDTH;
+    const ry = MAP_HEIGHT;
     return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
       new DSL.MoveLine(`
-      M 0 480
-      L 0 240
-      Z
+        M 0 640
+        L 0 320
+        C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}
       `),
       new DSL.Block(bgContext, 0, 0, true, [new DSL.BlockLayer()]),
       new DSL.Block(bgContext, 0, 1, false, [new DSL.BlockLayer()]),
