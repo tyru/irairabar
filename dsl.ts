@@ -175,8 +175,8 @@ export class MoveLine implements Callable {
     const dy = -3 * Math.pow(t, 2) * (p0[1] - 3 * p1[1] + 3 * p2[1] - p3[1]) +
                6 * t * (p0[1] - 2 * p1[1] + p2[1]) +
                -3 * (p0[1] - p1[1]);
-    const angleYaxis = Math.atan(-dy / dx);
-    const angle = angleYaxis >= Math.PI * 0.5 ? angleYaxis - Math.PI * 0.5 : angleYaxis + Math.PI * 1.5;
+    const angleXaxis = Math.atan(-dy / dx);
+    const angle = angleXaxis >= Math.PI * 0.5 ? angleXaxis - Math.PI * 0.5 : angleXaxis + Math.PI * 1.5;
 
     // Calculate current point on the curve
     const a = Math.pow(1 - t, 3);
@@ -227,8 +227,8 @@ export class MoveLine implements Callable {
     // NOTE: y axis is inverse
     const dx = 2 * ((t - 1) * p0[0] - (2 * t - 1) * p1[0] + t * p2[0]);
     const dy = 2 * ((t - 1) * p0[1] - (2 * t - 1) * p1[1] + t * p2[1]);
-    const angleYaxis = Math.atan(-dy / dx);
-    const angle = angleYaxis >= Math.PI * 0.5 ? angleYaxis - Math.PI * 0.5 : angleYaxis + Math.PI * 1.5;
+    const angleXaxis = Math.atan(-dy / dx);
+    const angle = angleXaxis >= Math.PI * 0.5 ? angleXaxis - Math.PI * 0.5 : angleXaxis + Math.PI * 1.5;
 
     // Calculate current point on the curve
     const a = Math.pow(1 - t, 2);
