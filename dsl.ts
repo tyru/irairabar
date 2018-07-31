@@ -118,6 +118,11 @@ export class MoveLine implements Callable {
     return cmd.command === 'curveto';
   }
 
+  /**
+   * cf.
+   * https://postd.cc/bezier-curves/
+   * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+   */
   private nextCurveTo(cmd: svgParser.CurveToCommand) {
     const p0 = glMatrix.vec2.fromValues(this.startCmdPoint[4], this.startCmdPoint[5]);
     const p1 = glMatrix.vec2.fromValues(cmd.x1, cmd.y1);
@@ -146,8 +151,10 @@ export class MoveLine implements Callable {
     glMatrix.vec2.add(p, p, p2);
     glMatrix.vec2.add(p, p, p3);
 
+    // FIXME
     const angle = Math.PI / 2 * t;
     glMatrix.mat2d.fromRotation(this._point, angle);
+
     this._point[4] = p[0];
     this._point[5] = p[1];
 
