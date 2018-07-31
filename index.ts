@@ -37,6 +37,7 @@ class Color {
 
 class Player {
   private readonly point: glMatrix.vec2;
+  private readonly prevPoint: glMatrix.vec2;
   private readonly radius: number;
   private readonly actualSizePer: number;
 
@@ -47,7 +48,8 @@ class Player {
     y: number = 0,
   ) {
     this.point = glMatrix.vec2.fromValues(x, y);
-    this.radius = 8;
+    this.prevPoint = glMatrix.vec2.clone(this.point);
+    this.radius = 4;
     this.actualSizePer = 0.8;
   }
 
@@ -56,7 +58,19 @@ class Player {
   }
 
   draw() {
-    const actRad = this.radius / this.actualSizePer;
+    const actRad = Math.round(this.radius / this.actualSizePer);
+
+    // Clear previous area
+    if (!glMatrix.vec2.equals(this.prevPoint, this.point)) {
+      this.context.clearRect(
+        this.prevPoint[0] - actRad,
+        this.prevPoint[1] - actRad,
+        actRad * 2,
+        actRad * 2,
+      );
+      glMatrix.vec2.copy(this.prevPoint, this.point);
+    }
+
     const radGrad = this.context.createRadialGradient(
       this.point[0], this.point[1], 0,
       this.point[0], this.point[1], actRad,
