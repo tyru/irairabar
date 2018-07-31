@@ -54,6 +54,10 @@ export class MoveLine implements Callable {
       return this.nextMoveTo(cmd);
     } else if (MoveLine.isLineToCommand(cmd)) {
       return this.nextLineTo(cmd);
+    } else if (MoveLine.isHorizontalLineToCommand(cmd)) {
+      return this.nextHorizontalLineTo(cmd);
+    } else if (MoveLine.isVerticalLineToCommand(cmd)) {
+      return this.nextVerticalLineTo(cmd);
     } else if (MoveLine.isClosePathCommand(cmd)) {
       return this.nextClosePath(cmd);
     } else if (MoveLine.isCurveToCommand(cmd)) {
@@ -101,6 +105,32 @@ export class MoveLine implements Callable {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
     return this;
+  }
+
+  private static isHorizontalLineToCommand(cmd: svgParser.Command): cmd is svgParser.HorizontalLineToCommand {
+    return cmd.command === 'horizontal lineto';
+  }
+
+  private nextHorizontalLineTo(cmd: svgParser.HorizontalLineToCommand) {
+    return this.nextLineTo(<svgParser.LineToCommand> {
+      code: 'L',
+      command: 'lineto',
+      x: cmd.x,
+      y: this.startCmdPoint[5],
+    });
+  }
+
+  private static isVerticalLineToCommand(cmd: svgParser.Command): cmd is svgParser.VerticalLineToCommand {
+    return cmd.command === 'vertical lineto';
+  }
+
+  private nextVerticalLineTo(cmd: svgParser.VerticalLineToCommand) {
+    return this.nextLineTo(<svgParser.LineToCommand> {
+      code: 'L',
+      command: 'lineto',
+      x: this.startCmdPoint[4],
+      y: cmd.y,
+    });
   }
 
   private static isClosePathCommand(cmd: svgParser.Command): cmd is svgParser.ClosePathCommand {

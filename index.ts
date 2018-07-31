@@ -66,7 +66,9 @@ import KeyInput from './key-input';
     return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, [
       new DSL.MoveLine([
         'M 0 640',
-        'L 0 320',
+        'V 320',
+        'h 50',
+        'h -50',
         // `C ${cx - rx} ${cy - kappa * ry} ${cx - kappa * rx} ${cy - ry} ${cx} ${cy - ry}`,
         `Q ${cx - rx} ${cy - ry} ${cx} ${cy - ry}`,
       ].join(' ')),
