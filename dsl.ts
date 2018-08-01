@@ -263,20 +263,20 @@ export class MoveLine implements Callable {
       [this.startCmdPoint[4], this.startCmdPoint[5]],
       [cmd.x, cmd.y],
     );
-    const angle = constants.theta1 + t * constants.deltaTheta;
+    const angle = t * constants.deltaTheta;
 
     if (1 - t < 0.001) {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
 
     const p = glMatrix.vec2.fromValues(
-      cmd.rx * Math.cos(angle),
-      cmd.ry * Math.sin(angle),
+      cmd.rx * Math.cos(constants.theta1 + angle),
+      cmd.ry * Math.sin(constants.theta1 + angle),
     );
     glMatrix.vec2.transformMat2d(p, p, constants.finalMat2d);
 
     // Apply above results
-    glMatrix.mat2d.fromRotation(this._point, angle - constants.theta1);
+    glMatrix.mat2d.fromRotation(this._point, angle);
     this._point[4] = p[0];
     this._point[5] = p[1];
 
