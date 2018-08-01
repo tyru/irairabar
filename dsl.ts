@@ -65,6 +65,8 @@ export class MoveLine implements Callable {
       return this.nextCurveTo(cmd);
     } else if (MoveLine.isQuadraticCurveToCommand(cmd)) {
       return this.nextQuadraticCurveTo(cmd);
+    } else if (MoveLine.isEllipticalArcCommand(cmd)) {
+      return this.nextEllipticalArc(cmd);
     } else {
       throw new Error(`not implemented yet: cmd = ${JSON.stringify(cmd)}`);
     }
@@ -167,16 +169,10 @@ export class MoveLine implements Callable {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
 
-    // Calculate rotation angle
-    // NOTE: y axis is inverse
-    const dx = -3 * Math.pow(t, 2) * (p0[0] - 3 * p1[0] + 3 * p2[0] - p3[0]) +
-               6 * t * (p0[0] - 2 * p1[0] + p2[0]) +
-               -3 * (p0[0] - p1[0]);
-    const dy = -3 * Math.pow(t, 2) * (p0[1] - 3 * p1[1] + 3 * p2[1] - p3[1]) +
-               6 * t * (p0[1] - 2 * p1[1] + p2[1]) +
-               -3 * (p0[1] - p1[1]);
-    const angleXaxis = Math.atan(-dy / dx);
-    const angle = angleXaxis >= Math.PI * 0.5 ? angleXaxis - Math.PI * 0.5 : angleXaxis + Math.PI * 1.5;
+    // Calculate rotation angle from control points
+    const theta1 = this.getAngle([1, 0], [p1[0] - p0[0], p1[1] - p0[1]]);
+    const theta2 = this.getAngle([1, 0], [p3[0] - p2[0], p3[1] - p2[1]]);
+    const angle = t * (theta2 - theta1);
 
     // Calculate current point on the curve
     const a = Math.pow(1 - t, 3);
@@ -223,12 +219,10 @@ export class MoveLine implements Callable {
       return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
     }
 
-    // Calculate rotation angle
-    // NOTE: y axis is inverse
-    const dx = 2 * ((t - 1) * p0[0] - (2 * t - 1) * p1[0] + t * p2[0]);
-    const dy = 2 * ((t - 1) * p0[1] - (2 * t - 1) * p1[1] + t * p2[1]);
-    const angleXaxis = Math.atan(-dy / dx);
-    const angle = angleXaxis >= Math.PI * 0.5 ? angleXaxis - Math.PI * 0.5 : angleXaxis + Math.PI * 1.5;
+    // Calculate rotation angle from the control point
+    const theta1 = this.getAngle([1, 0], [p1[0] - p0[0], p1[1] - p0[1]]);
+    const theta2 = this.getAngle([1, 0], [p2[0] - p1[0], p2[1] - p1[1]]);
+    const angle = t * (theta2 - theta1);
 
     // Calculate current point on the curve
     const a = Math.pow(1 - t, 2);
@@ -250,6 +244,110 @@ export class MoveLine implements Callable {
     this._point[5] = p[1];
 
     return this;
+  }
+
+  private static isEllipticalArcCommand(cmd: svgParser.Command): cmd is svgParser.EllipticalArcCommand {
+    return cmd.command === 'elliptical arc';
+  }
+
+  /**
+   * cf.
+   * https://www.w3.org/TR/SVG11/implnote.html#ArcConversionEndpointToCenter
+   */
+  private nextEllipticalArc(cmd: svgParser.EllipticalArcCommand) {
+    // NOTE: All values under constants are rectangular coordinate system based
+    const constants = this.calcEllipticalArc(cmd);
+
+    // 0 <= t <= 1
+    const t = this.tick / glMatrix.vec2.distance(
+      [this.startCmdPoint[4], this.startCmdPoint[5]],
+      [cmd.x, cmd.y],
+    );
+    const angle = constants.theta1 + t * constants.deltaTheta;
+
+    if (1 - t < 0.001) {
+      return new MoveLine(this.cmds.slice(1), this.startPoint, this._point);
+    }
+
+    const p = glMatrix.vec2.fromValues(
+      cmd.rx * Math.cos(angle),
+      cmd.ry * Math.sin(angle),
+    );
+    glMatrix.vec2.transformMat2d(p, p, constants.finalMat2d);
+
+    // Apply above results
+    glMatrix.mat2d.fromRotation(this._point, angle - constants.theta1);
+    this._point[4] = p[0];
+    this._point[5] = p[1];
+
+    return this;
+  }
+
+  private calcEllipticalArc(cmd: svgParser.EllipticalArcCommand) {
+    const rot = cmd.xAxisRotation / 180 * Math.PI;
+    const cos = Math.cos(rot);
+    const sin = Math.sin(rot);
+    const x1 = this.startCmdPoint[4];
+    const y1 = this.startCmdPoint[5];
+    const x2 = cmd.x;
+    const y2 = cmd.y;
+
+    const dx1y1Vec2 = glMatrix.vec2.fromValues((x1 - x2) / 2, (y1 - y2) / 2);
+    glMatrix.vec2.transformMat2(dx1y1Vec2, dx1y1Vec2, glMatrix.mat2.fromValues(cos, -sin, sin, cos));
+    const [dx1, dy1] = [dx1y1Vec2[0], dx1y1Vec2[1]];
+
+    const rxDouble = cmd.rx * cmd.rx;
+    const ryDouble = cmd.ry * cmd.ry;
+    const dx1Double = dx1 * dx1;
+    const dy1Double = dy1 * dy1;
+    let dcxyScalar = (rxDouble * ryDouble - rxDouble * dy1Double - ryDouble * dx1Double);
+    dcxyScalar = dcxyScalar / (rxDouble * dy1Double + ryDouble * dx1Double);
+    dcxyScalar = Math.sqrt(dcxyScalar);
+    if (cmd.largeArc === cmd.sweep) {
+      dcxyScalar = -dcxyScalar;
+    }
+
+    const dcxyVec2 = glMatrix.vec2.fromValues(
+      cmd.rx * dy1 / cmd.ry,
+      cmd.ry * dx1 / -cmd.rx,
+    );
+    glMatrix.vec2.multiply(dcxyVec2, dcxyVec2, glMatrix.vec2.fromValues(dcxyScalar, dcxyScalar));
+    const [dcx, dcy] = [dcxyVec2[0], dcxyVec2[1]];
+
+    const cxyVec2 = glMatrix.vec2.clone(dcxyVec2);
+    glMatrix.vec2.transformMat2d(
+      cxyVec2, cxyVec2, glMatrix.mat2d.fromValues(cos, sin, -sin, cos, (x1 + x2) / 2, (y1 + y2) / 2)
+    );
+    const [cx, cy] = [cxyVec2[0], cxyVec2[1]];
+
+    const startVec = [
+      (dx1 - dcx) / cmd.rx,
+      (dy1 - dcy) / cmd.ry,
+    ];
+    const theta1 = this.getAngle(
+      [1, 0],
+      startVec,
+    );
+    let deltaTheta = this.getAngle(
+      startVec,
+      [(-dx1 - dcx) / cmd.rx, (-dy1 - dcy) / cmd.ry],
+    ) % (Math.PI * 2);
+    if (!cmd.sweep && deltaTheta > 0) {
+      deltaTheta -= Math.PI * 2;
+    } else if (cmd.sweep && deltaTheta < 0) {
+      deltaTheta += Math.PI * 2;
+    }
+
+    const finalMat2d = glMatrix.mat2d.fromValues(
+      cos, sin, -sin, cos, cx, cy
+    );
+
+    return { cx, cy, theta1, deltaTheta, finalMat2d };
+  }
+
+  private getAngle(u: number[], v: number[]) {
+    const cross = u[0] * v[1] - u[1] * v[0];
+    return (cross < 0 ? -1 : 1) * glMatrix.vec2.angle(u, v);
   }
 
   call(stage: Stage) {
@@ -342,13 +440,6 @@ export class Stage {
   move() {
     this.moveLine = this.moveLine.next();
     const p = this.moveLine.point;
-
-    // Convert the coordinate system
-    // * Original rotation is the same as css's matrix() function
-    // * Translation is as-is
-    p[1] = -p[1];
-    p[2] = -p[2];
-
     if (!glMatrix.mat2d.invert(p, p)) {
       throw new Error('could not invert p = ' + Array.from(p).toString());
     }

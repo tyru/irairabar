@@ -63,8 +63,12 @@ import KeyInput from './key-input';
       new DSL.MoveLine([
         'M 0 640',
         'v -320',
+        // `C 0 ${320 - kappa * 320} 320 ${320 - kappa * 320} 320 320`,
         // `C 0 ${320 - kappa * 320} ${320 - kappa * 320} 0 320 0`,
-        `Q 0 0 320 0`,
+        // `Q 0 0 320 0`,
+        // `A 160 160 0 0 1 320 320`,
+        `A 320 320 0 0 1 320 0`,
+        // `A 320 320 0 0 1 160 160`,
       ].join(' ')),
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([
