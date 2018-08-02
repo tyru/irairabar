@@ -177,11 +177,11 @@ export function optimizeFunctions(first: [number, number], functions: SVGFunctio
   return optimize(first, functions);
 }
 
-function optimize(p0: [number, number], [head, ...rest] : SVGFunction[]): SVGFastFunction[] {
-  const fast = head(p0);
-  if (rest.length === 0) {
+function optimize(p0: [number, number], [f, ...xs] : SVGFunction[]): SVGFastFunction[] {
+  const fast = f(p0);
+  if (xs.length === 0) {
     return [fast];
   }
   const next = fast(1);
-  return [fast, ...optimize([next.x, next.y], rest)];
+  return [fast, ...optimize([next.x, next.y], xs)];
 }
