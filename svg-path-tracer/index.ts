@@ -94,26 +94,26 @@ function normalizeCmd(
   return cmd;
 }
 
-export function compileAndChainSVGPath(path: string, interpolate = true): SVGFastFunction[] {
+export function compileAndOptimizeSVGPath(path: string, interpolate = true): SVGFastFunction[] {
   const [first, functions] = compileSVGPath(path, interpolate);
-  return chainSVGFunction(first, functions);
+  return optimizeFunctions(first, functions);
 }
 
-export function chainSVGFunction(first: [number, number], functions: SVGFunction[]): SVGFastFunction[] {
+export function optimizeFunctions(first: [number, number], functions: SVGFunction[]): SVGFastFunction[] {
   if (functions.length === 0) {
     throw new Error('no functions');
   }
-  return chain(first, functions);
+  return optimize(first, functions);
 }
 
-function chain(p0: [number, number], functions : SVGFunction[]): SVGFastFunction[] {
+function optimize(p0: [number, number], functions : SVGFunction[]): SVGFastFunction[] {
   if (functions.length === 0) {
     return [];
   }
   const [head, ...rest] = functions;
   const fast = head(p0);
   const next = fast(1);
-  return [fast, ...chain([next.x, next.y], rest)];
+  return [fast, ...optimize([next.x, next.y], rest)];
 }
 
 

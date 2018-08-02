@@ -1,4 +1,4 @@
-import { compileAndChainSVGPath } from './svg-path-tracer';
+import { compileAndOptimizeSVGPath } from './svg-path-tracer';
 
 import * as DSL from './dsl';
 import Color from './color';
@@ -59,7 +59,7 @@ import KeyInput from './key-input';
 
   function loadStage() {
     const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
-    const functions = compileAndChainSVGPath([
+    const functions = compileAndOptimizeSVGPath([
       'M 0 640',
       'v -320',
       // 'l -50,-320',
