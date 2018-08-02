@@ -94,28 +94,6 @@ function normalizeCmd(
   return cmd;
 }
 
-export function compileAndOptimizeSVGPath(path: string, interpolate = true): SVGFastFunction[] {
-  const [first, functions] = compileSVGPath(path, interpolate);
-  return optimizeFunctions(first, functions);
-}
-
-export function optimizeFunctions(first: [number, number], functions: SVGFunction[]): SVGFastFunction[] {
-  if (functions.length === 0) {
-    throw new Error('no functions');
-  }
-  return optimize(first, functions);
-}
-
-function optimize(p0: [number, number], [head, ...rest] : SVGFunction[]): SVGFastFunction[] {
-  const fast = head(p0);
-  if (rest.length === 0) {
-    return [fast];
-  }
-  const next = fast(1);
-  return [fast, ...optimize([next.x, next.y], rest)];
-}
-
-
 function lineToCmd(x: number, y: number) {
   return <svgParser.LineToCommand> {
     code: 'L', command: 'lineto', x, y,
@@ -145,7 +123,6 @@ function getFuncByCmd(cmd: svgParser.Command): SVGFunction {
     throw new Error(`${cmd.code} command is not implemented yet: cmd = ${JSON.stringify(cmd)}`);
   }
 }
-
 
 function isMoveToCommand(cmd: svgParser.Command): cmd is svgParser.MoveToCommand {
   return cmd.command === 'moveto';
@@ -185,4 +162,26 @@ function isQuadraticCurveToCommand(cmd: svgParser.Command): cmd is svgParser.Qua
 
 function isEllipticalArcCommand(cmd: svgParser.Command): cmd is svgParser.EllipticalArcCommand {
   return cmd.command === 'elliptical arc';
+}
+
+
+export function compileAndOptimizeSVGPath(path: string, interpolate = true): SVGFastFunction[] {
+  const [first, functions] = compileSVGPath(path, interpolate);
+  return optimizeFunctions(first, functions);
+}
+
+export function optimizeFunctions(first: [number, number], functions: SVGFunction[]): SVGFastFunction[] {
+  if (functions.length === 0) {
+    throw new Error('no functions');
+  }
+  return optimize(first, functions);
+}
+
+function optimize(p0: [number, number], [head, ...rest] : SVGFunction[]): SVGFastFunction[] {
+  const fast = head(p0);
+  if (rest.length === 0) {
+    return [fast];
+  }
+  const next = fast(1);
+  return [fast, ...optimize([next.x, next.y], rest)];
 }
