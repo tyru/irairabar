@@ -106,12 +106,11 @@ export function optimizeFunctions(first: [number, number], functions: SVGFunctio
   return optimize(first, functions);
 }
 
-function optimize(p0: [number, number], functions : SVGFunction[]): SVGFastFunction[] {
-  if (functions.length === 0) {
-    return [];
-  }
-  const [head, ...rest] = functions;
+function optimize(p0: [number, number], [head, ...rest] : SVGFunction[]): SVGFastFunction[] {
   const fast = head(p0);
+  if (rest.length === 0) {
+    return [fast];
+  }
   const next = fast(1);
   return [fast, ...optimize([next.x, next.y], rest)];
 }
