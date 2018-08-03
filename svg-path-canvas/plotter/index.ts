@@ -25,10 +25,6 @@ export interface SVGFastFunction extends SVGFastFunction_ {
 }
 export type SVGFunction = (p0: [number, number]) => SVGFastFunction;
 
-export module SVGFastFunction {
-  let p0: [number, number];
-}
-
 const equalsPoint = glMatrix.vec2.equals;
 
 export function compile(path: string, interpolate = true): [[number, number], SVGFunction[]] {
