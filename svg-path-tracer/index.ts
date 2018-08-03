@@ -31,7 +31,7 @@ export module SVGFastFunction {
 
 const equalsPoint = glMatrix.vec2.equals;
 
-export function compileSVGPath(path: string, interpolate = true): [[number, number], SVGFunction[]] {
+export function compile(path: string, interpolate = true): [[number, number], SVGFunction[]] {
   const parsedCmds = makeAbsolute(parseSVG(path));
   if (parsedCmds.length === 0) {
     throw new Error('empty svg path');
@@ -165,14 +165,20 @@ function isEllipticalArcCommand(cmd: svgParser.Command): cmd is svgParser.Ellipt
 }
 
 
-export function compileAndOptimizeSVGPath(path: string, interpolate = true): SVGFastFunction[] {
-  const [first, functions] = compileSVGPath(path, interpolate);
-  return optimizeFunctions(first, functions);
-}
-
-export function optimizeFunctions(first: [number, number], functions: SVGFunction[]): SVGFastFunction[] {
+export function compileFast(path: string | SVGFunction[], first?: [number, number], interpolate = true): SVGFastFunction[] {
+  let functions: SVGFunction[];
+  if (typeof path === 'string') {
+    [first, functions] = compile(path, interpolate);
+  } else if (Array.isArray(path)) {
+    if (!first) {
+      throw new Error('compileFast(): must specify first point to the 2nd argument');
+    }
+    functions = path;
+  } else {
+    throw new Error('compileFast(): invalid type arguments');
+  }
   if (functions.length === 0) {
-    throw new Error('no functions');
+    throw new Error('compileFast(): no functions were given');
   }
   return optimize(first, functions);
 }

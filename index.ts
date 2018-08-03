@@ -1,4 +1,4 @@
-import { compileAndOptimizeSVGPath } from './svg-path-tracer';
+import { compileFast } from './svg-path-tracer';
 
 import * as DSL from './dsl';
 import Color from './color';
@@ -59,7 +59,7 @@ import KeyInput from './key-input';
 
   function loadStage() {
     const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
-    const functions = compileAndOptimizeSVGPath([
+    const functions = compileFast([
       'M 0 640',
       'v -320',
       // 'l -50,-320',
@@ -73,7 +73,7 @@ import KeyInput from './key-input';
       // `A 160 160 0 0 1 320 320`,
       // `A 320 320 0 0 1 320 0`,
       // `A 320 320 0 0 1 160 160`,
-    ].join(' '), false);
+    ].join(' '), null, false);
     const ops = [
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([
