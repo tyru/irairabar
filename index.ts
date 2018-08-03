@@ -97,7 +97,7 @@ import KeyInput from './key-input';
 
   const stage = loadStage();
   const player = new Player(
-    fgContext, Color.fromRGB(255, 255, 255), stage.width / 2, stage.height - 40
+    fgContext, Color.RED, stage.width / 2, stage.height - 40
   );
 
   function tick() {
