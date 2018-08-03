@@ -1,5 +1,5 @@
 import * as glMatrix from 'gl-matrix';
-import { CurveToCommand } from 'svg-path-parser';
+import { Command, CurveToCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
 import { getAngle } from '../util';
 
@@ -8,13 +8,13 @@ import { getAngle } from '../util';
   * https://postd.cc/bezier-curves/
   * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
   */
-export function createCurveToCommand(cmd: CurveToCommand): SVGFunction {
+export function createCurveToCommand(cmd: CurveToCommand, originalCmd: Command): SVGFunction {
   const p1 = glMatrix.vec2.fromValues(cmd.x1, cmd.y1);
   const p2 = glMatrix.vec2.fromValues(cmd.x2, cmd.y2);
   const p3 = glMatrix.vec2.fromValues(cmd.x, cmd.y);
   const theta2 = getAngle([1, 0], [p3[0] - p2[0], p3[1] - p2[1]]);
 
-  return function p0CurveToCommand(p0: [number, number]) {
+  function p0CurveToCommand(p0: [number, number]) {
     const theta1 = getAngle([1, 0], [p1[0] - p0[0], p1[1] - p0[1]]);
     const deltaTheta = theta2 - theta1;
 
@@ -53,5 +53,7 @@ export function createCurveToCommand(cmd: CurveToCommand): SVGFunction {
     }
 
     return Object.assign(curveToCommand, { p0 });
-  };
+  }
+
+  return Object.assign(p0CurveToCommand, { cmd, originalCmd });
 }

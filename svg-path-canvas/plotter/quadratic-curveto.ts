@@ -1,5 +1,5 @@
 import * as glMatrix from 'gl-matrix';
-import { QuadraticCurveToCommand } from 'svg-path-parser';
+import { Command, QuadraticCurveToCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
 import { getAngle } from '../util';
 
@@ -8,12 +8,12 @@ import { getAngle } from '../util';
   * https://postd.cc/bezier-curves/
   * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
   */
-export function createQuadraticCurveToCommand(cmd: QuadraticCurveToCommand): SVGFunction {
+export function createQuadraticCurveToCommand(cmd: QuadraticCurveToCommand, originalCmd: Command): SVGFunction {
   const p1 = glMatrix.vec2.fromValues(cmd.x1, cmd.y1);
   const p2 = glMatrix.vec2.fromValues(cmd.x, cmd.y);
   const theta2 = getAngle([1, 0], [p2[0] - p1[0], p2[1] - p1[1]]);
 
-  return function p0QuadraticCurveToCommand(p0: [number, number]) {
+  function p0QuadraticCurveToCommand(p0: [number, number]) {
     const theta1 = getAngle([1, 0], [p1[0] - p0[0], p1[1] - p0[1]]);
     const deltaTheta = (theta2 - theta1);
 
@@ -47,5 +47,7 @@ export function createQuadraticCurveToCommand(cmd: QuadraticCurveToCommand): SVG
     }
 
     return Object.assign(quadraticCurveToCommand, { p0 });
-  };
+  }
+
+  return Object.assign(p0QuadraticCurveToCommand, { cmd, originalCmd });
 }

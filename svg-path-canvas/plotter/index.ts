@@ -23,7 +23,11 @@ declare type SVGFastFunction_ = (t: number) => LinearFunctionResult;
 export interface SVGFastFunction extends SVGFastFunction_ {
   p0: [number, number];
 }
-export type SVGFunction = (p0: [number, number]) => SVGFastFunction;
+declare type SVGFunction_ = (p0: [number, number]) => SVGFastFunction;
+export interface SVGFunction extends SVGFunction_ {
+  cmd: svgParser.Command;
+  originalCmd: svgParser.Command;
+}
 declare type SVGComposedFunction_ = (t: number) => LinearFunctionResult;
 export interface SVGComposedFunction extends SVGComposedFunction_ {
   p0: [number, number];
@@ -64,12 +68,13 @@ export function compile(path: string, interpolate = true): [[number, number], SV
       return results;
     }
     current = p;
-    return [...results, getFuncByCmd(cmd)];
+    return [...results, getFuncByCmd(cmd, originalCmd)];
   }, <SVGFunction[]> []);
 
   // Check the current point == the first point
   if (interpolate && !equalsPoint(current, first)) {
-    const closePathFunc = getFuncByCmd(lineToCmd(first[0], first[1]));
+    const cmd = lineToCmd(first[0], first[1]);
+    const closePathFunc = getFuncByCmd(cmd, cmd);
     functions.push(closePathFunc);
   }
 
@@ -120,15 +125,15 @@ function getDestPoint(cmd: svgParser.Command): [number, number] {
   }
 }
 
-function getFuncByCmd(cmd: svgParser.Command): SVGFunction {
+function getFuncByCmd(cmd: svgParser.Command, originalCmd: svgParser.Command): SVGFunction {
   if (isLineToCommand(cmd)) {
-    return createLineToCommand(cmd);
+    return createLineToCommand(cmd, originalCmd);
   } else if (isCurveToCommand(cmd)) {
-    return createCurveToCommand(cmd);
+    return createCurveToCommand(cmd, originalCmd);
   } else if (isQuadraticCurveToCommand(cmd)) {
-    return createQuadraticCurveToCommand(cmd);
+    return createQuadraticCurveToCommand(cmd, originalCmd);
   } else if (isEllipticalArcCommand(cmd)) {
-    return createEllipticalArcCommand(cmd);
+    return createEllipticalArcCommand(cmd, originalCmd);
   } else {
     throw new Error(`${cmd.code} command is not implemented yet: cmd = ${JSON.stringify(cmd)}`);
   }

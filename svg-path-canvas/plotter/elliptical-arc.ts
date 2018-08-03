@@ -1,17 +1,17 @@
 import * as glMatrix from 'gl-matrix';
-import { EllipticalArcCommand } from 'svg-path-parser';
+import { Command, EllipticalArcCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
 import { getAngle } from '../util';
 
 
-export function createEllipticalArcCommand(cmd: EllipticalArcCommand): SVGFunction {
+export function createEllipticalArcCommand(cmd: EllipticalArcCommand, originalCmd: Command): SVGFunction {
   // https://www.w3.org/TR/SVG11/implnote.html#ArcOutOfRangeParameters
   const rx = Math.abs(cmd.rx);
   const ry = Math.abs(cmd.ry);
   const xAxisRotation = cmd.xAxisRotation * Math.PI / 180 < 0 ?
     (cmd.xAxisRotation % 360) + 360 : cmd.xAxisRotation % 360;
 
-  return function p0EllipticalArcCommand(p0: [number, number]) {
+  function p0EllipticalArcCommand(p0: [number, number]) {
     const { theta1, deltaTheta, finalMat2d } = calcConstants(
       p0[0], p0[1], rx, ry, xAxisRotation, cmd.largeArc, cmd.sweep, cmd.x, cmd.y,
     );
@@ -31,7 +31,9 @@ export function createEllipticalArcCommand(cmd: EllipticalArcCommand): SVGFuncti
     }
 
     return Object.assign(ellipticalArcCommand, { p0 });
-  };
+  }
+
+  return Object.assign(p0EllipticalArcCommand, { cmd, originalCmd });
 }
 
 /**
