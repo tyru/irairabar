@@ -121,12 +121,14 @@ import { compileFast } from '../../plotter';
     cameraContext.setTransform(1, 0, 0, 1, WIDTH / 2, HEIGHT / 2);
     cameraContext.clearRect(-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT);
     const m = glMatrix.mat2d.create();
+    // Invert angle (when function is x = 0, angle is -180)
     glMatrix.mat2d.fromRotation(m, angle + Math.PI);
     m[4] = x;
     m[5] = y;
     if (!glMatrix.mat2d.invert(m, m)) {
       throw new Error('could not invert matrix: ' + Array.from(m).toString());
     }
+    // Show entire circle not half circle
     m[5] += HEIGHT / 2;
     cameraContext.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
     cameraContext.drawImage(bgCanvas, -WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT);
