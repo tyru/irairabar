@@ -19,11 +19,25 @@ export interface LinearFunctionResult {
   angle: number;
 }
 
-declare type SVGFastFunction_ = (t: number) => LinearFunctionResult
+declare type SVGFastFunction_ = (t: number) => LinearFunctionResult;
 export interface SVGFastFunction extends SVGFastFunction_ {
   p0: [number, number];
 }
 export type SVGFunction = (p0: [number, number]) => SVGFastFunction;
+declare type SVGComposedFunction_ = (t: number) => LinearFunctionResult;
+export interface SVGComposedFunction extends SVGComposedFunction_ {
+  p0: [number, number];
+  functions: SVGFastFunction[];
+  index(t: number): number;
+  time(i: number, t: number): number;
+}
+
+export function isSVGFastFunction(value: any): value is SVGFastFunction {
+  return typeof value === 'function' && Array.isArray(value.p0) && value.p0.length === 2;
+}
+export function isSVGFastFunctionArray(value: any[]): value is SVGFastFunction[] {
+  return value.every(isSVGFastFunction);
+}
 
 const equalsPoint = glMatrix.vec2.equals;
 
@@ -186,4 +200,39 @@ function doCompileFast(p0: [number, number], [f, ...xs] : SVGFunction[]): SVGFas
   }
   const next = fast(1);
   return [fast, ...doCompileFast([next.x, next.y], xs)];
+}
+
+export function compose(path: string | SVGFunction[] | SVGFastFunction[], first?: [number, number], interpolate = true): SVGComposedFunction {
+  let functions: SVGFastFunction[];
+  if (Array.isArray(path) && isSVGFastFunctionArray(path)) {
+    functions = path;
+  } else {
+    functions = compileFast(path, first, interpolate);
+  }
+  if (functions.length === 0) {
+    throw new Error('compose(): no functions were given');
+  }
+  return doCompose(functions);
+}
+
+function doCompose(functions: SVGFastFunction[]): SVGComposedFunction {
+  function index(t: number) {
+    let i = t * functions.length;
+    if (i === functions.length) {
+      i = functions.length - 1;
+    }
+    return Math.floor(i);
+  }
+  function time(i: number, t: number) {
+    return functions.length * t - i;
+  }
+  function composedFunc(t: number): LinearFunctionResult {
+    const i = index(t);
+    return functions[i](time(i, t));
+  }
+
+  const p0 = functions[0].p0;
+  return Object.assign(composedFunc, {
+    p0, functions, index, time
+  });
 }
