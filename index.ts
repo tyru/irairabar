@@ -1,4 +1,4 @@
-import { compileFast } from './svg-path-canvas/plotter';
+import * as plotter from './svg-path-canvas/plotter';
 
 import * as DSL from './dsl';
 import Color from './color';
@@ -59,7 +59,7 @@ import KeyInput from './key-input';
 
   function loadStage() {
     const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
-    const functions = compileFast([
+    const func = plotter.compose([
       'M 0 640',
       'v -320',
       // 'l -50,-320',
@@ -68,10 +68,10 @@ import KeyInput from './key-input';
       // `C 0 ${320 - kappa * 320} ${320 - kappa * 320} 0 320 0`,
 
       // `Q 0 0 320 0`,
-      `Q 160 160 320 320`,
+      // `Q 160 160 320 320`,
 
       // `A 160 160 0 0 1 320 320`,
-      // `A 320 320 0 0 1 320 0`,
+      `A 320 320 0 0 1 320 0`,
       // `A 320 320 0 0 1 160 160`,
     ].join(' '), null, false);
     const ops = [
@@ -91,7 +91,8 @@ import KeyInput from './key-input';
         ]),
       ]),
     ];
-    return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, MAP_HEIGHT, functions, ops);
+    const maxTick = MAP_HEIGHT * func.functions.length;
+    return new DSL.Stage(bgContext, MAP_WIDTH, MAP_HEIGHT, maxTick, func, ops);
   }
 
   const stage = loadStage();

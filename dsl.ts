@@ -64,6 +64,7 @@ export class BlockObjectText implements BlockObject {
 }
 
 export class Stage {
+  private readonly DEBUG = true;
   private readonly blocks = new Map<string, Block>();
   private tick = 0;
   private currentTransform = glMatrix.mat2d.create();
@@ -73,7 +74,7 @@ export class Stage {
     public readonly width: number,
     public readonly height: number,
     private readonly maxTick: number,
-    private readonly svgFunctions: plotter.SVGFastFunction[],
+    private readonly svgFunc: plotter.SVGComposedFunction,
     private readonly ops: Callable[]) {
     ops.forEach(op => op.call(this));
   }
@@ -83,21 +84,22 @@ export class Stage {
   }
 
   move(): void {
-    if (this.svgFunctions.length === 0) {
+    if (this.tick > this.maxTick) {
       return;
     }
-    if (this.tick > this.maxTick) {
-      this.tick = 0;
-      this.svgFunctions.splice(0, 1);
-      return this.move();
-    }
     const t = this.tick++ / this.maxTick; // 0 <= t <= 1
-    const { x, y, angle } = this.svgFunctions[0](t);
+    const { x, y, angle } = this.svgFunc(t);
     const inverseAngle = (angle + Math.PI) % (Math.PI * 2)
 
-    const { name, p0 } = this.svgFunctions[0];
-    console.log(`${name}([${p0[0].toFixed(1)}, ${p0[1].toFixed(1)}])(${t}) = { x:${x.toFixed(1)}, y:${y.toFixed(1)}, angle:${angle} (${(angle * 180 / Math.PI).toFixed(1)}) }`);
-    console.log(`${name}: inverseAngle = ${inverseAngle} (${(inverseAngle * 180 / Math.PI).toFixed(1)})`);
+    let ct, name, p0;
+    if (this.DEBUG) {
+      const i = this.svgFunc.index(t);
+      ct = this.svgFunc.time(i, t);
+      ({ name, p0 } = this.svgFunc.functions[i]);
+      name = `[${i + 1}/${this.svgFunc.functions.length}] ${name}`;
+      console.log(`${name}([${p0[0].toFixed(1)}, ${p0[1].toFixed(1)}])(${ct} (was ${t})) = { x:${x.toFixed(1)}, y:${y.toFixed(1)}, angle:${angle} (${(angle * 180 / Math.PI).toFixed(1)}) }`);
+      console.log(`${name}: inverseAngle = ${inverseAngle} (${(inverseAngle * 180 / Math.PI).toFixed(1)})`);
+    }
 
     const m = glMatrix.mat2d.create();
     glMatrix.mat2d.fromRotation(m, inverseAngle);
@@ -106,7 +108,10 @@ export class Stage {
     if (!glMatrix.mat2d.invert(m, m)) {
       throw new Error('could not invert matrix: ' + Array.from(m).toString());
     }
-    console.log(`${name}: m =`, m);
+    if (this.DEBUG) {
+      console.log(`${name}: m =`, m);
+    }
+
     this.currentTransform = m;
     this.context.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
   }
