@@ -27,15 +27,13 @@ export default class Player {
     const actRad = Math.round(this.radius / this.actualSizePer);
 
     // Clear previous area
-    if (!glMatrix.vec2.equals(this.prevPoint, this.point)) {
-      this.context.clearRect(
-        this.prevPoint[0] - actRad,
-        this.prevPoint[1] - actRad,
-        actRad * 2,
-        actRad * 2,
-      );
-      glMatrix.vec2.copy(this.prevPoint, this.point);
-    }
+    this.context.clearRect(
+      this.prevPoint[0] - actRad,
+      this.prevPoint[1] - actRad,
+      actRad * 2,
+      actRad * 2,
+    );
+    glMatrix.vec2.copy(this.prevPoint, this.point);
 
     const radGrad = this.context.createRadialGradient(
       this.point[0], this.point[1], 0,
