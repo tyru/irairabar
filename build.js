@@ -1,8 +1,15 @@
-var browserify = require('browserify');
-var tsify = require('tsify');
+const browserify = require('browserify');
+const tsify = require('tsify');
+const fs = require('fs');
 
 browserify()
     .add('index.ts')
     .plugin('tsify')
     .bundle()
-    .pipe(process.stdout);
+    .pipe(fs.createWriteStream('index.js'));
+
+browserify()
+    .add('svg-path-tracer/demo.ts')
+    .plugin('tsify')
+    .bundle()
+    .pipe(fs.createWriteStream('svg-path-tracer/demo.js'));

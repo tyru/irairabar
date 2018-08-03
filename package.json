@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build.js >index.js"
+    "build": "node build.js"
   },
   "author": "tyru <tyru.exe@gmail.com>",
   "license": "ISC",
