@@ -1,7 +1,7 @@
 import * as glMatrix from 'gl-matrix';
 import * as svgParser from 'svg-path-parser';
 const { parseSVG, makeAbsolute } = svgParser;
-import { getAngle } from './util';
+import { getAngle } from '../util';
 
 import { createLineToCommand } from './lineto';
 import { createCurveToCommand } from './curveto';
@@ -180,14 +180,14 @@ export function compileFast(path: string | SVGFunction[], first?: [number, numbe
   if (functions.length === 0) {
     throw new Error('compileFast(): no functions were given');
   }
-  return optimize(first, functions);
+  return doCompileFast(first, functions);
 }
 
-function optimize(p0: [number, number], [f, ...xs] : SVGFunction[]): SVGFastFunction[] {
+function doCompileFast(p0: [number, number], [f, ...xs] : SVGFunction[]): SVGFastFunction[] {
   const fast = f(p0);
   if (xs.length === 0) {
     return [fast];
   }
   const next = fast(1);
-  return [fast, ...optimize([next.x, next.y], xs)];
+  return [fast, ...doCompileFast([next.x, next.y], xs)];
 }

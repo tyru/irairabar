@@ -1,6 +1,6 @@
 import * as glMatrix from 'gl-matrix';
 import * as svgParser from 'svg-path-parser';
-import * as tracer from './svg-path-tracer';
+import { plotter } from './svg-path-canvas';
 
 interface Callable {
   call(stage: Stage): void
@@ -73,7 +73,7 @@ export class Stage {
     public readonly width: number,
     public readonly height: number,
     private readonly maxTick: number,
-    private readonly svgFunctions: tracer.SVGFastFunction[],
+    private readonly svgFunctions: plotter.SVGFastFunction[],
     private readonly ops: Callable[]) {
     ops.forEach(op => op.call(this));
   }

@@ -1,7 +1,7 @@
 import * as glMatrix from 'gl-matrix';
 import { LineToCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
-import { getAngle } from './util';
+import { getAngle } from '../util';
 
 export function createLineToCommand(cmd: LineToCommand): SVGFunction {
   return function p0LineToCommand(p0: [number, number]) {

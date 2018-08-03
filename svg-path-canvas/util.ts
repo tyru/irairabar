@@ -1,5 +1,4 @@
 import * as glMatrix from 'gl-matrix';
-import { LinearFunction } from './index';
 
 export function getAngle(v1: [number, number], v2: [number, number]) {
   const cross = v1[0] * v2[1] - v1[1] * v2[0];

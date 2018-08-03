@@ -1,7 +1,7 @@
 import * as glMatrix from 'gl-matrix';
 import { CurveToCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
-import { getAngle } from './util';
+import { getAngle } from '../util';
 
 /**
   * cf.

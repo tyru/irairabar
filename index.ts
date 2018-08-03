@@ -1,4 +1,4 @@
-import { compileFast } from './svg-path-tracer';
+import { compileFast } from './svg-path-canvas/plotter';
 
 import * as DSL from './dsl';
 import Color from './color';

@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build.js"
+    "build": "node build.js",
+    "build-demo": "node svg-path-canvas/build.js"
   },
   "author": "tyru <tyru.exe@gmail.com>",
   "license": "ISC",

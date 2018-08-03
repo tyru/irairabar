@@ -1,5 +1,5 @@
 import * as glMatrix from 'gl-matrix';
-import { compileFast } from './index';
+import { compileFast } from '../../plotter';
 
 (() => {
   const WIDTH = 320;

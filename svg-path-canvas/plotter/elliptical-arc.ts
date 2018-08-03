@@ -1,7 +1,7 @@
 import * as glMatrix from 'gl-matrix';
 import { EllipticalArcCommand } from 'svg-path-parser';
 import { SVGFunction } from './index';
-import { getAngle } from './util';
+import { getAngle } from '../util';
 
 
 export function createEllipticalArcCommand(cmd: EllipticalArcCommand): SVGFunction {
