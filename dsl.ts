@@ -1,5 +1,4 @@
 import * as glMatrix from 'gl-matrix';
-import * as svgParser from 'svg-path-parser';
 import { plotter } from './svg-path-canvas';
 
 interface Callable {
