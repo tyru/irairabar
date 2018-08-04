@@ -1,7 +1,6 @@
 import * as glMatrix from 'gl-matrix';
 import * as svgParser from 'svg-path-parser';
 const { parseSVG, makeAbsolute } = svgParser;
-import { getAngle } from '../util';
 
 import { createLineToCommand } from './lineto';
 import { createCurveToCommand } from './curveto';
@@ -83,7 +82,7 @@ export function compile(path: string, interpolate = true): [[number, number], SV
 
 function normalizeCmd(
   cmd: svgParser.Command,
-  prevCmds: svgParser.Command[],
+  _prevCmds: svgParser.Command[],
   current: [number, number],
   first: [number, number],
 ): svgParser.Command {

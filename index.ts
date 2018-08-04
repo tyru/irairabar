@@ -58,7 +58,7 @@ import KeyInput from './key-input';
   const fgContext = fgCanvas.getContext('2d');
 
   function loadStage() {
-    const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
+    // const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
     const func = plotter.compose([
       'M 0 640',
       'v -320',

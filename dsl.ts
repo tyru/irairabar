@@ -51,14 +51,14 @@ export class BlockObjectText implements BlockObject {
   constructor(
     private readonly context: CanvasRenderingContext2D,
     private readonly text: string,
-    private readonly x: number,
-    private readonly y: number,
+    private readonly dx: number,
+    private readonly dy: number,
   ) {}
 
   draw(_: BlockLayer, block: Block) {
     const { x, y, bottomWall } = block;
     this.context.fillStyle = bottomWall ? 'white' : 'black';
-    this.context.fillText(this.text, x + 20, y + 20);
+    this.context.fillText(this.text, x + this.dx, y + this.dy);
   }
 }
 
@@ -74,7 +74,7 @@ export class Stage {
     public readonly height: number,
     private readonly maxTick: number,
     private readonly svgFunc: plotter.SVGComposedFunction,
-    private readonly ops: Callable[]) {
+    ops: Callable[]) {
     ops.forEach(op => op.call(this));
   }
 

@@ -1,5 +1,5 @@
 import * as glMatrix from 'gl-matrix';
-import { compileFast } from '../../plotter';
+import { compose } from '../../plotter';
 
 (() => {
   const WIDTH = 320;
@@ -27,12 +27,6 @@ import { compileFast } from '../../plotter';
     fgContext.setTransform(1, 0, 0, 1, WIDTH / 2, HEIGHT / 2);
     bgContext.setTransform(1, 0, 0, 1, WIDTH / 2, HEIGHT / 2);
     cameraContext.setTransform(1, 0, 0, 1, WIDTH / 2, HEIGHT / 2);
-
-    const functions = compileFast([
-      `M ${RADIUS} 0`,
-      `A ${RADIUS} ${RADIUS} 0 0 1 ${-RADIUS} 0`,
-      `A ${RADIUS} ${RADIUS} 0 0 1 ${RADIUS} 0`,
-    ].join(' '), null, false);
 
     // circle
     bgContext.beginPath();
@@ -68,30 +62,18 @@ import { compileFast } from '../../plotter';
     context.stroke();
   }
 
-  function drawLinearFuncText(
-    context: CanvasRenderingContext2D,
-    t: number,
-    x: number,
-    y: number,
-    a: number,
-    b: number,
-  ) {
-    const func = `y = ${a.toFixed(1)}x + ${b.toFixed(1)}`;
-    const angle = `angle = ${t}`;
-
-    context.fillText(func, -WIDTH / 2 + 5, HEIGHT / 2 - 20);
-    context.fillText(angle, -WIDTH / 2 + 5, HEIGHT / 2 - 5);
-  }
-
   let t = 0;
   const maxTick = 360;
+  const func = compose([
+    `M ${RADIUS} 0`,
+    `A ${RADIUS} ${RADIUS} 0 0 1 ${-RADIUS} 0`,
+    `A ${RADIUS} ${RADIUS} 0 0 1 ${RADIUS} 0`,
+  ].join(' '), null, false);
 
   function tick() {
     fgContext.clearRect(-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT);
 
-    const angle = t * Math.PI / 180;
-    const x = RADIUS * Math.cos(angle);
-    const y = RADIUS * Math.sin(angle);
+    const { x, y, angle } = func(t / maxTick);
 
     let p1: [number, number];
     let p2: [number, number];
