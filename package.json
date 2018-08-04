@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "devDependencies": {
-    "browserify": "^16.2.2",
-    "tsify": "^4.0.0",
-    "typescript": "^3.0.1"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node build.js",
@@ -15,8 +10,13 @@
   },
   "author": "tyru <tyru.exe@gmail.com>",
   "license": "ISC",
+  "devDependencies": {
+    "browserify": "^16.2.2",
+    "tsify": "^4.0.0",
+    "typescript": "^3.0.1",
+    "@types/gl-matrix": "^2.4.1"
+  },
   "dependencies": {
-    "@types/gl-matrix": "^2.4.1",
     "gl-matrix": "^2.7.1",
     "svg-path-parser": "^1.1.0"
   }
