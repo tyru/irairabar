@@ -16,6 +16,7 @@
   "author": "tyru <tyru.exe@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "@types/gl-matrix": "^2.4.1",
     "gl-matrix": "^2.7.1",
     "svg-path-parser": "^1.1.0"
   }
