@@ -6,8 +6,8 @@ interface Callable {
 }
 
 export class Block implements Callable {
-  private width: number;
-  private height: number;
+  private width = 0;
+  private height = 0;
 
   constructor(
     private readonly context: CanvasRenderingContext2D,

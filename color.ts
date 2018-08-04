@@ -177,8 +177,9 @@ export default class Color {
 
   public static fromRGB(r: number, g: number, b: number): Color {
     const key = String.fromCharCode(r) + String.fromCharCode(g) + String.fromCharCode(b);
-    if (Color.cache.has(key)) {
-      return Color.cache.get(key);
+    const value = Color.cache.get(key);
+    if (value !== undefined) {
+      return value;
     }
     const color = new Color(r, g, b)
     Color.cache.set(key, color);

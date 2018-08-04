@@ -1,16 +1,12 @@
 {
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "skipDefaultLibCheck": false,
     "target": "es5",
-    "lib": ["es6", "dom"],
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+    "lib": ["es6", "dom"]
   }
 }

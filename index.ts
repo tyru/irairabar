@@ -52,10 +52,16 @@ import KeyInput from './key-input';
   };
 
   const bgCanvas = <HTMLCanvasElement> document.getElementById('bg');
-  const bgContext = bgCanvas.getContext('2d');
+  const bgContext = <CanvasRenderingContext2D> bgCanvas.getContext('2d');
+  if (!bgContext) {
+    throw new Error('could not get 2d context of <canvas id="bg">');
+  }
 
   const fgCanvas = <HTMLCanvasElement> document.getElementById('fg');
-  const fgContext = fgCanvas.getContext('2d');
+  const fgContext = <CanvasRenderingContext2D> fgCanvas.getContext('2d');
+  if (!fgContext) {
+    throw new Error('could not get 2d context of <canvas id="fg">');
+  }
 
   function loadStage() {
     // const kappa = (-1 + Math.sqrt(2)) / 3 * 4;
@@ -73,7 +79,7 @@ import KeyInput from './key-input';
       // `A 160 160 0 0 1 320 320`,
       `A 320 320 0 0 1 320 0`,
       // `A 320 320 0 0 1 160 160`,
-    ].join(' '), null, false);
+    ].join(' '), undefined, false);
     const ops = [
       new DSL.Block(bgContext, 0, 0, true, [
         new DSL.BlockLayer([

@@ -12,13 +12,22 @@ import { compose } from '../../plotter';
                                 (window as any).msRequestAnimationFrame;
 
   const bgCanvas = <HTMLCanvasElement> document.getElementById('bg');
-  const bgContext = bgCanvas.getContext('2d');
+  const bgContext = <CanvasRenderingContext2D> bgCanvas.getContext('2d');
+  if (!bgContext) {
+    throw new Error('could not get 2d context of <canvas id="bg">');
+  }
 
   const fgCanvas = <HTMLCanvasElement> document.getElementById('fg');
-  const fgContext = fgCanvas.getContext('2d');
+  const fgContext = <CanvasRenderingContext2D> fgCanvas.getContext('2d');
+  if (!fgContext) {
+    throw new Error('could not get 2d context of <canvas id="fg">');
+  }
 
   const cameraCanvas = <HTMLCanvasElement> document.getElementById('camera');
-  const cameraContext = cameraCanvas.getContext('2d');
+  const cameraContext = <CanvasRenderingContext2D> cameraCanvas.getContext('2d');
+  if (!cameraContext) {
+    throw new Error('could not get 2d context of <canvas id="camera">');
+  }
 
   function setup() {
     fgCanvas.width  = bgCanvas.width  = cameraCanvas.width  = WIDTH;
@@ -68,7 +77,7 @@ import { compose } from '../../plotter';
     `M ${RADIUS} 0`,
     `A ${RADIUS} ${RADIUS} 0 0 1 ${-RADIUS} 0`,
     `A ${RADIUS} ${RADIUS} 0 0 1 ${RADIUS} 0`,
-  ].join(' '), null, false);
+  ].join(' '), undefined, false);
 
   function tick() {
     fgContext.clearRect(-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT);

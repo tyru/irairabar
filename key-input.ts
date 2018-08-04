@@ -1,10 +1,10 @@
 import * as glMatrix from 'gl-matrix';
 
 export default class KeyInput {
-  public left: boolean;
-  public up: boolean;
-  public right: boolean;
-  public down: boolean;
+  public left = false;
+  public up = false;
+  public right = false;
+  public down = false;
 
   toMat2d(scalar: number = 1) {
     const x = this.left ? -1 : this.right ? 1 : 0;
