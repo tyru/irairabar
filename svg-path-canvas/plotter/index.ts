@@ -1,6 +1,8 @@
-import * as glMatrix from 'gl-matrix';
-import * as svgParser from 'svg-path-parser';
-const { parseSVG, makeAbsolute } = svgParser;
+import * as parser from './parser';
+export const parse = parser.parse;
+
+import { vec2 } from 'gl-matrix';
+const equalsPoint = vec2.equals;
 
 import { createLineToCommand } from './lineto';
 import { createCurveToCommand } from './curveto';
@@ -24,8 +26,8 @@ export interface SVGFastFunction extends SVGFastFunction_ {
 }
 declare type SVGFunction_ = (p0: [number, number]) => SVGFastFunction;
 export interface SVGFunction extends SVGFunction_ {
-  cmd: svgParser.Command;
-  originalCmd: svgParser.Command;
+  cmd: parser.SVGCommand;
+  originalCmd: parser.SVGCommand;
 }
 declare type SVGComposedFunction_ = (t: number) => LinearFunctionResult;
 export interface SVGComposedFunction extends SVGComposedFunction_ {
@@ -42,10 +44,8 @@ export function isSVGFastFunctionArray(value: any[]): value is SVGFastFunction[]
   return value.every(isSVGFastFunction);
 }
 
-const equalsPoint = glMatrix.vec2.equals;
-
-export function compile(path: string, interpolate = true): [[number, number], SVGFunction[]] {
-  const parsedCmds = makeAbsolute(parseSVG(path));
+export function compile(path: string | parser.SVGCommand[], interpolate = true): [[number, number], SVGFunction[]] {
+  const parsedCmds = typeof path === 'string' ? parse(path) : path;
   if (parsedCmds.length === 0) {
     throw new Error('empty svg path');
   }
@@ -56,10 +56,10 @@ export function compile(path: string, interpolate = true): [[number, number], SV
 
   const first = <[number, number]> [moveTo.x, moveTo.y];
   let current = <[number, number]> [moveTo.x, moveTo.y];
-  const prevCmds = <svgParser.Command[]> [];
+  const prevCmds = <parser.SVGCommand[]> [];
 
   // Convert SVG commands to SVGFunction[]
-  const functions = rest.reduce((results: SVGFunction[], originalCmd: svgParser.Command) => {
+  const functions = rest.reduce((results: SVGFunction[], originalCmd: parser.SVGCommand) => {
     const cmd = normalizeCmd(originalCmd, prevCmds, current, first);
     prevCmds.push(cmd);
     const p = getDestPoint(cmd);
@@ -81,11 +81,11 @@ export function compile(path: string, interpolate = true): [[number, number], SV
 }
 
 function normalizeCmd(
-  cmd: svgParser.Command,
-  _prevCmds: svgParser.Command[],
+  cmd: parser.SVGCommand,
+  _prevCmds: parser.SVGCommand[],
   current: [number, number],
   first: [number, number],
-): svgParser.Command {
+): parser.SVGCommand {
   if (isHorizontalLineToCommand(cmd)) {
     return lineToCmd(cmd.x, current[1]);
   }
@@ -109,12 +109,12 @@ function normalizeCmd(
 }
 
 function lineToCmd(x: number, y: number) {
-  return <svgParser.LineToCommand> {
+  return <parser.LineToCommand> {
     code: 'L', command: 'lineto', x, y,
   };
 }
 
-function getDestPoint(cmd: svgParser.Command): [number, number] {
+function getDestPoint(cmd: parser.SVGCommand): [number, number] {
   if (isLineToCommand(cmd) || isCurveToCommand(cmd) ||
       isQuadraticCurveToCommand(cmd) || isEllipticalArcCommand(cmd)) {
     return [cmd.x, cmd.y];
@@ -124,7 +124,7 @@ function getDestPoint(cmd: svgParser.Command): [number, number] {
   }
 }
 
-function getFuncByCmd(cmd: svgParser.Command, originalCmd: svgParser.Command): SVGFunction {
+function getFuncByCmd(cmd: parser.SVGCommand, originalCmd: parser.SVGCommand): SVGFunction {
   if (isLineToCommand(cmd)) {
     return createLineToCommand(cmd, originalCmd);
   } else if (isCurveToCommand(cmd)) {
@@ -138,43 +138,43 @@ function getFuncByCmd(cmd: svgParser.Command, originalCmd: svgParser.Command): S
   }
 }
 
-function isMoveToCommand(cmd: svgParser.Command): cmd is svgParser.MoveToCommand {
+function isMoveToCommand(cmd: parser.SVGCommand): cmd is parser.MoveToCommand {
   return cmd.command === 'moveto';
 }
 
-function isLineToCommand(cmd: svgParser.Command): cmd is svgParser.LineToCommand {
+function isLineToCommand(cmd: parser.SVGCommand): cmd is parser.LineToCommand {
   return cmd.command === 'lineto';
 }
 
-function isHorizontalLineToCommand(cmd: svgParser.Command): cmd is svgParser.HorizontalLineToCommand {
+function isHorizontalLineToCommand(cmd: parser.SVGCommand): cmd is parser.HorizontalLineToCommand {
   return cmd.command === 'horizontal lineto';
 }
 
-function isVerticalLineToCommand(cmd: svgParser.Command): cmd is svgParser.VerticalLineToCommand {
+function isVerticalLineToCommand(cmd: parser.SVGCommand): cmd is parser.VerticalLineToCommand {
   return cmd.command === 'vertical lineto';
 }
 
-function isClosePathCommand(cmd: svgParser.Command): cmd is svgParser.ClosePathCommand {
+function isClosePathCommand(cmd: parser.SVGCommand): cmd is parser.ClosePathCommand {
   return cmd.command === 'closepath';
 }
 
-function isSmoothCurveToCommand(cmd: svgParser.Command): cmd is svgParser.SmoothCurveToCommand {
+function isSmoothCurveToCommand(cmd: parser.SVGCommand): cmd is parser.SmoothCurveToCommand {
   return cmd.command === 'smooth curveto';
 }
 
-function isSmoothQuadraticCurveToCommand(cmd: svgParser.Command): cmd is svgParser.SmoothQuadraticCurveToCommand {
+function isSmoothQuadraticCurveToCommand(cmd: parser.SVGCommand): cmd is parser.SmoothQuadraticCurveToCommand {
   return cmd.command === 'smooth quadratic curveto';
 }
 
-function isCurveToCommand(cmd: svgParser.Command): cmd is svgParser.CurveToCommand {
+function isCurveToCommand(cmd: parser.SVGCommand): cmd is parser.CurveToCommand {
   return cmd.command === 'curveto';
 }
 
-function isQuadraticCurveToCommand(cmd: svgParser.Command): cmd is svgParser.QuadraticCurveToCommand {
+function isQuadraticCurveToCommand(cmd: parser.SVGCommand): cmd is parser.QuadraticCurveToCommand {
   return cmd.command === 'quadratic curveto';
 }
 
-function isEllipticalArcCommand(cmd: svgParser.Command): cmd is svgParser.EllipticalArcCommand {
+function isEllipticalArcCommand(cmd: parser.SVGCommand): cmd is parser.EllipticalArcCommand {
   return cmd.command === 'elliptical arc';
 }
 

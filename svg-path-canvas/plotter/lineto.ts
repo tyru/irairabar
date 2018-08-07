@@ -1,9 +1,9 @@
 import * as glMatrix from 'gl-matrix';
-import { Command, LineToCommand } from 'svg-path-parser';
+import { SVGCommand, LineToCommand } from './parser';
 import { SVGFunction } from './index';
 import { getAngle } from '../util';
 
-export function createLineToCommand(cmd: LineToCommand, originalCmd: Command): SVGFunction {
+export function createLineToCommand(cmd: LineToCommand, originalCmd: SVGCommand): SVGFunction {
   function p0LineToCommand(p0: [number, number]) {
     const angle0 = getAngle([1, 0], [cmd.x - p0[0], cmd.y - p0[1]]);
     const angle = angle0 - Math.PI * 0.5;

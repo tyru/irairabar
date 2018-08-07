@@ -11,10 +11,11 @@
   "author": "tyru <tyru.exe@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "@types/gl-matrix": "^2.4.1",
+    "@types/svg-path-parser": "^1.1.0",
     "browserify": "^16.2.2",
     "tsify": "^4.0.0",
-    "typescript": "^3.0.1",
-    "@types/gl-matrix": "^2.4.1"
+    "typescript": "^3.0.1"
   },
   "dependencies": {
     "gl-matrix": "^2.7.1",
